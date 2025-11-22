@@ -10,7 +10,6 @@ export default defineConfig({
         plugins: [['babel-plugin-react-compiler']],
       },
     }),
-    // @ts-expect-error typescript should not complain as much here
     tailwindcss(),
   ],
 })
