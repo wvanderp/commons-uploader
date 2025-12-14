@@ -2,6 +2,7 @@ import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 import { useAuthStore } from '../store/authStore';
 
 const CLIENT_ID = import.meta.env.VITE_WIKIMEDIA_CLIENT_ID! as string;
+const OAUTH_SCOPES = (import.meta.env.VITE_WIKIMEDIA_OAUTH_SCOPES as string | undefined)?.trim() || 'basic';
 // Construct redirect URI based on current location to support both local dev and production
 // Assuming the app is served at /commons-uploader/ or root.
 // We need to match what is registered in Wikimedia.
@@ -51,18 +52,46 @@ export function useWikimediaAuth() {
 
   const fetchUserInfo = async (token: string) => {
     try {
-      // Use origin=* for CORS support with the MediaWiki API
-      const res = await fetch('https://commons.wikimedia.org/w/api.php?action=query&meta=userinfo&format=json&origin=*', {
+      // Prefer the OAuth2 resource profile endpoint (most reliable for identity).
+      const profileRes = await fetch(`${AUTH_BASE_URL}/resource/profile`, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+
+      if (profileRes.ok) {
+        const profile = await profileRes.json();
+        const name = typeof profile?.username === 'string'
+          ? profile.username
+          : typeof profile?.user_name === 'string'
+            ? profile.user_name
+            : typeof profile?.name === 'string'
+              ? profile.name
+              : null;
+
+        if (name) {
+          setUserName(name);
+          return;
+        }
+      }
+
+      // Fallback: MediaWiki Action API userinfo.
+      // If this returns an IP, MediaWiki considers the request anonymous.
+      const res = await fetch('https://commons.wikimedia.org/w/api.php?action=query&meta=userinfo&format=json&origin=*', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (res.ok) {
         const data = await res.json();
-        setUserName(data.query.userinfo.name);
+        const name = data?.query?.userinfo?.name;
+        if (typeof name === 'string') {
+          setUserName(name);
+        }
       }
     } catch (e) {
-      console.error("Failed to fetch user info", e);
+      console.error('Failed to fetch user info', e);
     }
   };
 
@@ -78,6 +107,7 @@ export function useWikimediaAuth() {
       client_id: CLIENT_ID,
       response_type: 'code',
       redirect_uri: REDIRECT_URI,
+      scope: OAUTH_SCOPES,
       state,
       code_challenge: challenge,
       code_challenge_method: 'S256',
