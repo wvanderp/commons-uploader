@@ -6,7 +6,7 @@ export default function TitleTemplateInput() {
 
     return (
         <section>
-            <h2 className="text-lg font-medium mb-2">Title Template</h2>
+            <h2 className="mb-2 text-lg font-medium">Title Template</h2>
             <input
                 type="text"
                 className="w-full rounded border border-gray-700 bg-zinc-800 p-2 text-gray-300"

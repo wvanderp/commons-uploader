@@ -6,7 +6,7 @@ const OAUTH_SCOPES = (import.meta.env.VITE_WIKIMEDIA_OAUTH_SCOPES as string | un
 // Construct redirect URI based on current location to support both local dev and production
 // Assuming the app is served at /commons-uploader/ or root.
 // We need to match what is registered in Wikimedia.
-const REDIRECT_URI = `${window.location.origin}/commons-uploader/auth/callback`; 
+const REDIRECT_URI = `${globalThis.location.origin}/commons-uploader/auth/callback`; 
 const AUTH_BASE_URL = 'https://meta.wikimedia.org/w/rest.php/oauth2';
 
 export function useWikimediaAuth() {
@@ -41,8 +41,8 @@ export function useWikimediaAuth() {
           });
           return data.access_token;
         }
-      } catch (e) {
-        console.error("Failed to refresh token", e);
+      } catch (error) {
+        console.error("Failed to refresh token", error);
       }
     }
     
@@ -90,8 +90,8 @@ export function useWikimediaAuth() {
           setUserName(name);
         }
       }
-    } catch (e) {
-      console.error('Failed to fetch user info', e);
+    } catch (error) {
+      console.error('Failed to fetch user info', error);
     }
   };
 
@@ -103,7 +103,7 @@ export function useWikimediaAuth() {
     sessionStorage.setItem('wm_state', state);
     sessionStorage.setItem('wm_verifier', verifier);
 
-    const params = new URLSearchParams({
+    const parameters = new URLSearchParams({
       client_id: CLIENT_ID,
       response_type: 'code',
       redirect_uri: REDIRECT_URI,
@@ -113,11 +113,11 @@ export function useWikimediaAuth() {
       code_challenge_method: 'S256',
     });
 
-    window.location.href = `${AUTH_BASE_URL}/authorize?${params.toString()}`;
+    globalThis.location.href = `${AUTH_BASE_URL}/authorize?${parameters.toString()}`;
   };
 
   const handleCallback = async () => {
-    const url = new URL(window.location.href);
+    const url = new URL(globalThis.location.href);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
     const error = url.searchParams.get('error');

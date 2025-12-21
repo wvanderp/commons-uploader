@@ -20,13 +20,13 @@ export function FillOutTab() {
 
   if (imageIds.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-5xl mb-4">📭</div>
-        <h2 className="text-xl font-medium text-white mb-2">No images uploaded</h2>
-        <p className="text-gray-400 mb-6">Upload some images first to fill out their details.</p>
+      <div className="py-12 text-center">
+        <div className="mb-4 text-5xl">📭</div>
+        <h2 className="mb-2 text-xl font-medium text-white">No images uploaded</h2>
+        <p className="mb-6 text-gray-400">Upload some images first to fill out their details.</p>
         <button
           onClick={() => setCurrentTab('upload')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+          className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
         >
           Go to Upload
         </button>
@@ -36,13 +36,13 @@ export function FillOutTab() {
 
   if (keys.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-5xl mb-4">📝</div>
-        <h2 className="text-xl font-medium text-white mb-2">No variables defined</h2>
-        <p className="text-gray-400 mb-6">Add variables to your template first (e.g., {"{{{description}}}"}).</p>
+      <div className="py-12 text-center">
+        <div className="mb-4 text-5xl">📝</div>
+        <h2 className="mb-2 text-xl font-medium text-white">No variables defined</h2>
+        <p className="mb-6 text-gray-400">Add variables to your template first (e.g., {"{{{description}}}"}).</p>
         <button
           onClick={() => setCurrentTab('variables')}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+          className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
         >
           Go to Variables
         </button>
@@ -87,38 +87,37 @@ export function FillOutTab() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Fill Out Details</h2>
+        <h2 className="mb-2 text-2xl font-bold text-white">Fill Out Details</h2>
         <p className="text-gray-400">
           Image {safeCurrentIndex + 1} of {imageIds.length}
         </p>
       </div>
 
       {/* Progress bar for all images */}
-      <div className="bg-zinc-800 rounded-full h-2 overflow-hidden">
+      <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
         <div
-          className="bg-blue-600 h-full transition-all duration-300"
+          className="h-full bg-blue-600 transition-all duration-300"
           style={{ width: `${((safeCurrentIndex + 1) / imageIds.length) * 100}%` }}
         />
       </div>
 
       {/* Image navigation dots */}
-      <div className="flex justify-center gap-2 flex-wrap">
+      <div className="flex flex-wrap justify-center gap-2">
         {imageIds.map((id, index) => {
           const img = images[id];
           const imgFilledFields = keys.filter(key => img.keys[key]?.trim()).length;
           const isComplete = imgFilledFields === totalFields;
-          
+
           return (
             <button
               key={id}
               onClick={() => setCurrentIndex(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === safeCurrentIndex
-                  ? 'bg-blue-500'
-                  : isComplete
+              className={`size-3 rounded-full transition-colors ${index === safeCurrentIndex
+                ? 'bg-blue-500'
+                : (isComplete
                   ? 'bg-green-500'
-                  : 'bg-zinc-600 hover:bg-zinc-500'
-              }`}
+                  : 'bg-zinc-600 hover:bg-zinc-500')
+                }`}
               title={`Image ${index + 1}: ${img.name}`}
             />
           );
@@ -126,44 +125,43 @@ export function FillOutTab() {
       </div>
 
       {/* Current image editor */}
-      <div className="bg-zinc-800/50 rounded-xl overflow-hidden">
+      <div className="overflow-hidden rounded-xl bg-zinc-800/50">
         <div className="flex flex-col lg:flex-row">
           {/* Image preview */}
-          <div className="lg:w-1/3 bg-zinc-900 flex items-center justify-center p-4">
+          <div className="flex items-center justify-center bg-zinc-900 p-4 lg:w-1/3">
             <img
               src={imageUrl}
               alt={currentImage.name}
-              className="max-h-[400px] object-contain rounded"
+              className="max-h-[400px] rounded object-contain"
             />
           </div>
 
           {/* Form */}
-          <div className="flex-1 p-6 space-y-4">
+          <div className="flex-1 space-y-4 p-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-white font-medium truncate" title={currentImage.name}>
+              <h3 className="truncate font-medium text-white" title={currentImage.name}>
                 {currentImage.name}
               </h3>
               <div className="flex items-center gap-2">
-                <span className={`text-sm px-2 py-1 rounded ${
-                  progressPercent === 100 ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700 text-gray-400'
-                }`}>
+                <span className={`rounded px-2 py-1 text-sm ${progressPercent === 100 ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700 text-gray-400'
+                  }`}>
                   {filledFields}/{totalFields} fields
                 </span>
               </div>
             </div>
 
             {/* Quick actions */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={applyGlobalVariables}
-                className="text-sm bg-zinc-700 hover:bg-zinc-600 text-gray-300 px-3 py-1.5 rounded transition-colors"
+                className="rounded bg-zinc-700 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-zinc-600"
               >
                 Apply global defaults
               </button>
               {safeCurrentIndex > 0 && (
                 <button
                   onClick={copyFromPrevious}
-                  className="text-sm bg-zinc-700 hover:bg-zinc-600 text-gray-300 px-3 py-1.5 rounded transition-colors"
+                  className="rounded bg-zinc-700 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-zinc-600"
                 >
                   Copy from previous
                 </button>
@@ -171,13 +169,13 @@ export function FillOutTab() {
             </div>
 
             {/* Fields */}
-            <div className="grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
+            <div className="grid max-h-[300px] grid-cols-1 gap-4 overflow-y-auto pr-2">
               {keys.map((key) => (
                 <div key={key} className="space-y-1">
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-gray-500">
                     {key}
                     {globalVariables[key] && !currentImage.keys[key] && (
-                      <span className="text-blue-400 normal-case font-normal">
+                      <span className="font-normal normal-case text-blue-400">
                         (default: {globalVariables[key]})
                       </span>
                     )}
@@ -186,7 +184,7 @@ export function FillOutTab() {
                     type="text"
                     value={currentImage.keys[key] || ''}
                     onChange={(e) => handleKeyChange(key, e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                    className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder={globalVariables[key] || key}
                   />
                 </div>
@@ -197,31 +195,30 @@ export function FillOutTab() {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <button
           onClick={() => setCurrentIndex(Math.max(0, safeCurrentIndex - 1))}
           disabled={safeCurrentIndex === 0}
-          className={`font-medium px-6 py-3 rounded-lg transition-colors ${
-            safeCurrentIndex === 0
-              ? 'text-gray-600 cursor-not-allowed'
-              : 'text-gray-400 hover:text-white'
-          }`}
+          className={`rounded-lg px-6 py-3 font-medium transition-colors ${safeCurrentIndex === 0
+            ? 'cursor-not-allowed text-gray-600'
+            : 'text-gray-400 hover:text-white'
+            }`}
         >
           ← Previous
         </button>
-        
+
         <div className="flex gap-3">
           {safeCurrentIndex < imageIds.length - 1 ? (
             <button
               onClick={() => setCurrentIndex(safeCurrentIndex + 1)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
             >
               Next image →
             </button>
           ) : (
             <button
               onClick={() => setCurrentTab('review')}
-              className="bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+              className="rounded-lg bg-green-600 px-6 py-3 font-medium text-white transition-colors hover:bg-green-700"
             >
               Go to Review ✓
             </button>

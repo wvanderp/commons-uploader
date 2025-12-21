@@ -16,8 +16,8 @@ export function TabNavigation() {
   const reviewedCount = Object.values(images).filter((img) => img.reviewed).length;
 
   return (
-    <nav className="border-b border-zinc-700 mb-6">
-      <div className="max-w-5xl mx-auto px-6">
+    <nav className="mb-6 border-b border-zinc-700">
+      <div className="mx-auto max-w-5xl px-6">
         <div className="flex space-x-1">
           {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
@@ -37,8 +37,8 @@ export function TabNavigation() {
                 className={`
                   relative px-4 py-3 text-sm font-medium transition-colors
                   ${isActive
-                    ? 'text-white border-b-2 border-white'
-                    : 'text-gray-400 hover:text-gray-200 border-b-2 border-transparent'
+                    ? 'border-b-2 border-white text-white'
+                    : 'border-b-2 border-transparent text-gray-400 hover:text-gray-200'
                   }
                 `}
               >
@@ -46,7 +46,7 @@ export function TabNavigation() {
                   {tab.label}
                   {badge && (
                     <span className={`
-                      text-xs px-1.5 py-0.5 rounded-full
+                      rounded-full px-1.5 py-0.5 text-xs
                       ${isActive ? 'bg-white text-black' : 'bg-zinc-700 text-gray-300'}
                     `}>
                       {badge}

@@ -3,14 +3,14 @@ import { useImageSetStore } from '../store/imageSetStore';
 
 export const ImageUploader: React.FC = () => {
   const addImage = useImageSetStore((state) => state.addImage);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputReference = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (files) {
-      Array.from(files).forEach((file) => {
+      for (const file of files) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.addEventListener('load', (e) => {
           const result = e.target?.result as string;
           if (result) {
             const [prefix, base64] = result.split(',');
@@ -23,15 +23,15 @@ export const ImageUploader: React.FC = () => {
               keys: {},
             });
           }
-        };
+        });
         reader.readAsDataURL(file);
-      });
+      }
       // Reset input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (fileInputReference.current) {
+        fileInputReference.current.value = '';
       }
     }
-  };
+  }
 
   return (
     <section>
@@ -40,12 +40,12 @@ export const ImageUploader: React.FC = () => {
         multiple
         accept="image/*"
         className="hidden"
-        ref={fileInputRef}
+        ref={fileInputReference}
         onChange={handleFileChange}
       />
       <button
-        onClick={() => fileInputRef.current?.click()}
-        className="bg-white text-black hover:bg-gray-200 font-medium px-6 py-3 rounded-lg transition-colors shadow-sm"
+        onClick={() => fileInputReference.current?.click()}
+        className="rounded-lg bg-white px-6 py-3 font-medium text-black shadow-sm transition-colors hover:bg-gray-200"
       >
         Add images to set
       </button>

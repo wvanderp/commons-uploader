@@ -4,22 +4,22 @@ export function Header() {
   const { login, logout, isAuthenticated, userName } = useWikimediaAuth();
 
   return (
-    <header className="bg-black border-b border-zinc-800 h-16 flex items-center px-6 sticky top-0 z-10">
-      <h1 className="text-white text-xl font-bold tracking-tight">Commons Uploader</h1>
+    <header className="sticky top-0 z-10 flex h-16 items-center border-b border-zinc-800 bg-black px-6">
+      <h1 className="text-xl font-bold tracking-tight text-white">Commons Uploader</h1>
       {isAuthenticated ? (
         <div className="ml-auto flex items-center gap-4">
-          {userName && <span className="text-white text-sm">{userName}</span>}
-          <button 
+          {userName && <span className="text-sm text-white">{userName}</span>}
+          <button
             onClick={logout}
-            className="text-sm font-medium text-gray-300 hover:text-white px-4 py-2 rounded-md hover:bg-zinc-800 transition-colors"
+            className="rounded-md px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-zinc-800 hover:text-white"
           >
             Sign out
           </button>
         </div>
       ) : (
-        <button 
+        <button
           onClick={login}
-          className="ml-auto text-sm font-medium text-gray-300 hover:text-white px-4 py-2 rounded-md hover:bg-zinc-800 transition-colors"
+          className="ml-auto rounded-md px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-zinc-800 hover:text-white"
         >
           Sign in
         </button>

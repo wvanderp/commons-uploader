@@ -2,9 +2,9 @@ export function generateCodeVerifier(length = 64): string {
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
   return btoa(String.fromCharCode(...array))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+/g, "");
+    .replaceAll('+', "-")
+    .replaceAll('/', "_")
+    .replaceAll(/=+/g, "");
 }
 
 export async function generateCodeChallenge(verifier: string): Promise<string> {
@@ -12,7 +12,7 @@ export async function generateCodeChallenge(verifier: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", data);
   const base64 = btoa(String.fromCharCode(...new Uint8Array(digest)));
   return base64
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+/g, "");
+    .replaceAll('+', "-")
+    .replaceAll('/', "_")
+    .replaceAll(/=+/g, "");
 }

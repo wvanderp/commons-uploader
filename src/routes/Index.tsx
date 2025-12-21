@@ -8,7 +8,7 @@ export function Index() {
   return (
     <>
       <TabNavigation />
-      <main className="max-w-5xl mx-auto px-6 pb-12">
+      <main className="mx-auto max-w-5xl px-6 pb-12">
         {currentTab === 'upload' && <UploadTab />}
         {currentTab === 'variables' && <VariablesTab />}
         {currentTab === 'fillout' && <FillOutTab />}

@@ -7,5 +7,5 @@ export function extractTemplateKeys(template: string): string[] {
       keys.add(match[1].trim());
     }
   }
-  return Array.from(keys);
+  return [...keys];
 }

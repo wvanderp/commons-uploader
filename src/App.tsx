@@ -7,10 +7,10 @@ function App() {
   const currentTab = useImageSetStore((state) => state.currentTab);
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-gray-300 font-sans">
+    <div className="min-h-screen bg-zinc-900 font-sans text-gray-300">
       <Header />
       <TabNavigation />
-      <main className="max-w-5xl mx-auto px-6 pb-12">
+      <main className="mx-auto max-w-5xl px-6 pb-12">
         {currentTab === 'upload' && <UploadTab />}
         {currentTab === 'variables' && <VariablesTab />}
         {currentTab === 'fillout' && <FillOutTab />}

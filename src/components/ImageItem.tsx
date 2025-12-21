@@ -2,11 +2,11 @@ import { useMemo, useEffect, useState } from 'react';
 import { useImageSetStore } from '../store/imageSetStore';
 import { extractTemplateKeys } from '../utils/templateUtils';
 
-interface ImageItemProps {
+interface ImageItemProperties {
     id: string;
 }
 
-export function ImageItem({ id }: ImageItemProps) {
+export function ImageItem({ id }: ImageItemProperties) {
     const image = useImageSetStore((state) => state.imageSet.images[id]);
     const template = useImageSetStore((state) => state.imageSet.template);
     const titleTemplate = useImageSetStore((state) => state.imageSet.titleTemplate);
@@ -32,35 +32,35 @@ export function ImageItem({ id }: ImageItemProps) {
     if (!image) return null;
 
     return (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden p-6 flex flex-col md:flex-row gap-6">
-            <div className="w-full md:w-1/3 bg-zinc-900 flex items-center justify-center rounded-lg overflow-hidden min-h-[200px]">
+        <div className="flex flex-col gap-6 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-6 md:flex-row">
+            <div className="flex min-h-[200px] w-full items-center justify-center overflow-hidden rounded-lg bg-zinc-900 md:w-1/3">
                 {imageUrl && (
                     <img
                         src={imageUrl}
                         alt={image.name}
-                        className="object-contain max-h-[400px] w-full" />
+                        className="max-h-[400px] w-full object-contain" />
                 )}
             </div>
             <div className="flex-1 space-y-4">
-                <div className="text-white font-medium truncate" title={image.name}>
+                <div className="truncate font-medium text-white" title={image.name}>
                     {image.name}
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                     {keys.map((key) => (
                         <div key={key} className="space-y-1">
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <label className="text-xs font-medium uppercase tracking-wider text-gray-500">
                                 {key}
                             </label>
                             <input
                                 type="text"
                                 value={image.keys[key] || ''}
                                 onChange={(e) => handleKeyChange(key, e.target.value)}
-                                className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500 transition-colors"
+                                className="w-full rounded border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white transition-colors focus:border-gray-500 focus:outline-none"
                                 placeholder={key} />
                         </div>
                     ))}
                     {keys.length === 0 && (
-                        <p className="text-gray-500 italic text-sm">
+                        <p className="text-sm italic text-gray-500">
                             No variables found in template. Add variables like {"{{{variable}}}"} to the template above.
                         </p>
                     )}

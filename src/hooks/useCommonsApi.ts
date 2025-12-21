@@ -5,32 +5,37 @@ const API_URL = 'https://commons.wikimedia.org/w/api.php';
 export function useCommonsApi() {
   const { getValidAccessToken } = useWikimediaAuth();
 
-  const getCsrfToken = async () => {
+  async function getCsrfToken() {
     const token = await getValidAccessToken();
     if (!token) throw new Error('Not authenticated');
 
-    const params = new URLSearchParams({
+    const parameters = new URLSearchParams({
       action: 'query',
       meta: 'tokens',
       type: 'csrf',
       format: 'json',
-      origin: '*',
+      crossorigin: 'true',
     });
 
-    const res = await fetch(`${API_URL}?${params.toString()}`, {
+    const res = await fetch(`${API_URL}?${parameters.toString()}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
     const data = await res.json();
+
+    if (!data.query || !data.query.tokens) {
+      throw new Error(`Failed to get CSRF token: ${JSON.stringify(data)}`);
+    }
+
     return data.query.tokens.csrftoken;
-  };
+  }
 
   const uploadFile = async (file: File, filename: string, text: string) => {
     const token = await getValidAccessToken();
     if (!token) throw new Error('Not authenticated');
-    
+
     const csrfToken = await getCsrfToken();
 
     const form = new FormData();
@@ -42,7 +47,7 @@ export function useCommonsApi() {
     form.append('token', csrfToken);
     form.append('file', file);
 
-    const res = await fetch(`${API_URL}?origin=*`, {
+    const res = await fetch(`${API_URL}?crossorigin=true`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -52,7 +57,7 @@ export function useCommonsApi() {
 
     const data = await res.json();
     if (data.error) {
-        throw new Error(data.error.info);
+      throw new Error(data.error.info);
     }
     return data;
   };

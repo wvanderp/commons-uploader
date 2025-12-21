@@ -6,16 +6,16 @@ export function UploadTab() {
   const images = useImageSetStore((state) => state.imageSet.images);
   const removeImage = useImageSetStore((state) => state.removeImage);
   const setCurrentTab = useImageSetStore((state) => state.setCurrentTab);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputReference = useRef<HTMLInputElement>(null);
 
   const imageIds = Object.keys(images);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files) {
-      Array.from(files).forEach((file) => {
+      for (const file of files) {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.addEventListener('load', (e) => {
           const result = e.target?.result as string;
           if (result) {
             const [prefix, base64] = result.split(',');
@@ -28,12 +28,12 @@ export function UploadTab() {
               keys: {},
             });
           }
-        };
+        });
         reader.readAsDataURL(file);
-      });
+      }
       // Reset input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      if (fileInputReference.current) {
+        fileInputReference.current.value = '';
       }
     }
   };
@@ -42,10 +42,10 @@ export function UploadTab() {
     event.preventDefault();
     const files = event.dataTransfer.files;
     if (files) {
-      Array.from(files).forEach((file) => {
+      for (const file of files) {
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
-          reader.onload = (e) => {
+          reader.addEventListener('load', (e) => {
             const result = e.target?.result as string;
             if (result) {
               const [prefix, base64] = result.split(',');
@@ -58,10 +58,10 @@ export function UploadTab() {
                 keys: {},
               });
             }
-          };
+          });
           reader.readAsDataURL(file);
         }
-      });
+      }
     }
   };
 
@@ -72,7 +72,7 @@ export function UploadTab() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Upload Images</h2>
+        <h2 className="mb-2 text-2xl font-bold text-white">Upload Images</h2>
         <p className="text-gray-400">Add images you want to upload to Wikimedia Commons</p>
       </div>
 
@@ -80,23 +80,23 @@ export function UploadTab() {
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className="border-2 border-dashed border-zinc-600 rounded-xl p-12 text-center hover:border-zinc-500 transition-colors"
+        className="rounded-xl border-2 border-dashed border-zinc-600 p-12 text-center transition-colors hover:border-zinc-500"
       >
         <input
           type="file"
           multiple
           accept="image/*"
           className="hidden"
-          ref={fileInputRef}
+          ref={fileInputReference}
           onChange={handleFileChange}
         />
         <div className="space-y-4">
           <div className="text-5xl">📷</div>
           <div>
-            <p className="text-gray-300 mb-2">Drag and drop images here, or</p>
+            <p className="mb-2 text-gray-300">Drag and drop images here, or</p>
             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-white text-black hover:bg-gray-200 font-medium px-6 py-3 rounded-lg transition-colors shadow-sm"
+              onClick={() => fileInputReference.current?.click()}
+              className="rounded-lg bg-white px-6 py-3 font-medium text-black shadow-sm transition-colors hover:bg-gray-200"
             >
               Browse files
             </button>
@@ -111,30 +111,30 @@ export function UploadTab() {
           <h3 className="text-lg font-medium text-white">
             Uploaded Images ({imageIds.length})
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
             {imageIds.map((id) => {
               const image = images[id];
               const imageUrl = `data:${image.mimeType};base64,${image.file}`;
               return (
                 <div
                   key={id}
-                  className="relative group aspect-square bg-zinc-800 rounded-lg overflow-hidden"
+                  className="group relative aspect-square overflow-hidden rounded-lg bg-zinc-800"
                 >
                   <img
                     src={imageUrl}
                     alt={image.name}
-                    className="w-full h-full object-cover"
+                    className="size-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       onClick={() => removeImage(id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                      className="rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
                     >
                       Remove
                     </button>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-2">
-                    <p className="text-xs text-gray-300 truncate">{image.name}</p>
+                  <div className="absolute inset-x-0 bottom-0 bg-black/70 p-2">
+                    <p className="truncate text-xs text-gray-300">{image.name}</p>
                   </div>
                 </div>
               );
@@ -148,7 +148,7 @@ export function UploadTab() {
         <div className="flex justify-end">
           <button
             onClick={() => setCurrentTab('variables')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
           >
             Next: Set up templates →
           </button>

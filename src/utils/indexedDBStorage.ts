@@ -10,9 +10,9 @@ const getDB = (): Promise<IDBDatabase> => {
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve(request.result);
         request.onupgradeneeded = () => {
-            const db = request.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME);
+            const database = request.result;
+            if (!database.objectStoreNames.contains(STORE_NAME)) {
+                database.createObjectStore(STORE_NAME);
             }
         };
     });
@@ -20,9 +20,9 @@ const getDB = (): Promise<IDBDatabase> => {
 
 export const indexedDBStorage: StateStorage = {
     async getItem(name: string): Promise<string | null> {
-        const db = await getDB();
+        const database = await getDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const transaction = database.transaction(STORE_NAME, 'readonly');
             const store = transaction.objectStore(STORE_NAME);
             const request = store.get(name);
             request.onsuccess = () => resolve(request.result as string || null);
@@ -30,9 +30,9 @@ export const indexedDBStorage: StateStorage = {
         });
     },
     async setItem(name: string, value: string): Promise<void> {
-        const db = await getDB();
+        const database = await getDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const transaction = database.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
             const request = store.put(value, name);
             request.onsuccess = () => resolve();
@@ -40,9 +40,9 @@ export const indexedDBStorage: StateStorage = {
         });
     },
     async removeItem(name: string): Promise<void> {
-        const db = await getDB();
+        const database = await getDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readwrite');
+            const transaction = database.transaction(STORE_NAME, 'readwrite');
             const store = transaction.objectStore(STORE_NAME);
             const request = store.delete(name);
             request.onsuccess = () => resolve();

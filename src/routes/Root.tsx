@@ -4,7 +4,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
 export function Root() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-gray-300 font-sans">
+    <div className="min-h-screen bg-zinc-900 font-sans text-gray-300">
       <Header />
       <Outlet />
       <TanStackRouterDevtools />

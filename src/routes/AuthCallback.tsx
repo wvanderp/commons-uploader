@@ -17,9 +17,9 @@ export function AuthCallback() {
       .then(() => {
         navigate({ to: '/' });
       })
-      .catch((err) => {
-        console.error(err);
-        setError(err.message);
+      .catch((error_) => {
+        console.error(error_);
+        setError(error_.message);
       });
   }, [handleCallback, navigate]);
 

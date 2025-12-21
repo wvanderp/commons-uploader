@@ -66,14 +66,14 @@ export const useImageSetStore = create<StateStore>()(
 |description={{en|1={{{description}}}}}
 |date={{{date}}}
 |source={{own}}
-|author=[[User:YourUsername|YourUsername]]
+|author=[[User:{{{YourUsername}}}|{{{YourUsername}}}]]
 }}
 
 =={{int:license-header}}==
 {{self|cc-by-sa-4.0}}
 
 [[Category:{{{category}}}]]`,
-                titleTemplate: '{{{location}}} - {{{subject}}} ({{{date}}}).jpg',
+                titleTemplate: '{{{subject}}} - ({{{date}}}).jpg',
                 globalVariables: {},
                 images: {},
             },

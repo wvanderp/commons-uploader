@@ -7,7 +7,7 @@ export function TemplateInput() {
   return (
     <section className="space-y-4">
       <div className="flex flex-col gap-1">
-        <label className="text-white font-medium text-lg" htmlFor="templateInput">
+        <label className="text-lg font-medium text-white" htmlFor="templateInput">
           Template for images
         </label>
         <p className="text-sm text-gray-500">
@@ -19,7 +19,7 @@ export function TemplateInput() {
         placeholder="..."
         value={template}
         onChange={(e) => setTemplate(e.target.value)}
-        className="w-full h-32 bg-zinc-950 border border-zinc-700 rounded-lg p-4 text-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent resize-y font-mono" />
+        className="h-32 w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 p-4 font-mono text-gray-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-gray-500" />
     </section>
   );
 }
