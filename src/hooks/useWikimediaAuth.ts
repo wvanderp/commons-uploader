@@ -2,11 +2,12 @@ import { generateCodeVerifier, generateCodeChallenge } from '../utils/pkce';
 import { useAuthStore } from '../store/authStore';
 
 const CLIENT_ID = import.meta.env.VITE_WIKIMEDIA_CLIENT_ID! as string;
-const OAUTH_SCOPES = (import.meta.env.VITE_WIKIMEDIA_OAUTH_SCOPES as string | undefined)?.trim() || 'basic';
+// OAuth 2.0 scopes should be space-separated
+const OAUTH_SCOPES = ["uploadfile", "basic"].join(' ');
 // Construct redirect URI based on current location to support both local dev and production
 // Assuming the app is served at /commons-uploader/ or root.
 // We need to match what is registered in Wikimedia.
-const REDIRECT_URI = `${globalThis.location.origin}/commons-uploader/auth/callback`; 
+const REDIRECT_URI = `${globalThis.location.origin}/commons-uploader/auth/callback`;
 const AUTH_BASE_URL = 'https://meta.wikimedia.org/w/rest.php/oauth2';
 
 export function useWikimediaAuth() {
@@ -19,25 +20,25 @@ export function useWikimediaAuth() {
     }
 
     if (refreshToken) {
-       const body = new URLSearchParams({
+      const body = new URLSearchParams({
         grant_type: 'refresh_token',
         client_id: CLIENT_ID,
         refresh_token: refreshToken,
       });
-      
+
       try {
         const res = await fetch(`${AUTH_BASE_URL}/access_token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body,
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           setTokens({
-              accessToken: data.access_token,
-              refreshToken: data.refresh_token || refreshToken,
-              expiresAt: Math.floor(Date.now() / 1000) + data.expires_in,
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token || refreshToken,
+            expiresAt: Math.floor(Date.now() / 1000) + data.expires_in,
           });
           return data.access_token;
         }
@@ -45,7 +46,7 @@ export function useWikimediaAuth() {
         console.error("Failed to refresh token", error);
       }
     }
-    
+
     clearTokens();
     return null;
   };
@@ -76,8 +77,8 @@ export function useWikimediaAuth() {
       }
 
       // Fallback: MediaWiki Action API userinfo.
-      // If this returns an IP, MediaWiki considers the request anonymous.
-      const res = await fetch('https://commons.wikimedia.org/w/api.php?action=query&meta=userinfo&format=json&origin=*', {
+      // For OAuth authenticated CORS requests, use crossorigin= (not origin=*)
+      const res = await fetch('https://commons.wikimedia.org/w/api.php?action=query&meta=userinfo&format=json&crossorigin=', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -163,12 +164,12 @@ export function useWikimediaAuth() {
     });
 
     if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Token endpoint error: ${res.status} ${text}`);
+      const text = await res.text();
+      throw new Error(`Token endpoint error: ${res.status} ${text}`);
     }
 
     const data = await res.json();
-    
+
     setTokens({
       accessToken: data.access_token,
       refreshToken: data.refresh_token,
@@ -181,6 +182,6 @@ export function useWikimediaAuth() {
   const logout = () => {
     clearTokens();
   };
-  
+
   return { login, handleCallback, logout, accessToken, isAuthenticated: !!accessToken, getValidAccessToken, userName };
 }
