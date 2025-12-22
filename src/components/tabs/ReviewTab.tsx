@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useImageSetStore, type Image } from '../../store/imageSetStore';
 
-import { useCommonsApi } from '../../hooks/useCommonsApi';
-import { useWikimediaAuth } from '../../hooks/useWikimediaAuth';
+import { useWikimediaCommons, type UploadWarning } from '../../hooks/useWikimediaCommons';
 
 function applyTemplate(template: string, keys: Record<string, string>, globalVariables: Record<string, string>): string {
   let result = template;
@@ -122,12 +121,12 @@ export function ReviewTab() {
   const clearAllImages = useImageSetStore((state) => state.clearAllImages);
   const setCurrentTab = useImageSetStore((state) => state.setCurrentTab);
 
-  const { uploadFile } = useCommonsApi();
-  const { isAuthenticated } = useWikimediaAuth();
+  const { uploadFile, isAuthenticated } = useWikimediaCommons();
 
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, 'pending' | 'uploading' | 'success' | 'error'>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, 'pending' | 'uploading' | 'success' | 'error' | 'warning'>>({});
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
+  const [uploadWarnings, setUploadWarnings] = useState<Record<string, { warnings: UploadWarning[]; filekey?: string; file: File; title: string; description: string }>>({});
 
   const imageIds = Object.keys(images);
 
@@ -159,7 +158,7 @@ export function ReviewTab() {
     }
 
     setIsUploading(true);
-    const initialProgress: Record<string, 'pending' | 'uploading' | 'success' | 'error'> = {};
+    const initialProgress: Record<string, 'pending' | 'uploading' | 'success' | 'error' | 'warning'> = {};
     for (const id of imageIds) {
       if (images[id].reviewed) {
         initialProgress[id] = 'pending';
@@ -167,6 +166,7 @@ export function ReviewTab() {
     }
     setUploadProgress(initialProgress);
     setUploadErrors({});
+    setUploadWarnings({});
 
     for (const { id, image, title, description } of processedImages) {
       if (!image.reviewed) continue;
@@ -176,7 +176,7 @@ export function ReviewTab() {
       try {
         // Convert base64 to File
         const byteCharacters = atob(image.file);
-        const byteNumbers = Array.from({length: byteCharacters.length});
+        const byteNumbers = new Array<number>(byteCharacters.length);
         for (let index = 0; index < byteCharacters.length; index++) {
           byteNumbers[index] = byteCharacters.charCodeAt(index);
         }
@@ -184,8 +184,27 @@ export function ReviewTab() {
         const blob = new Blob([byteArray], { type: image.mimeType });
         const file = new File([blob], image.name, { type: image.mimeType });
 
-        await uploadFile(file, title, description);
-        setUploadProgress((previous) => ({ ...previous, [id]: 'success' }));
+        const result = await uploadFile(file, title, description);
+        
+        if (result.success) {
+          setUploadProgress((previous) => ({ ...previous, [id]: 'success' }));
+        } else if (result.warnings && result.warnings.length > 0) {
+          // File has warnings - let user decide
+          setUploadProgress((previous) => ({ ...previous, [id]: 'warning' }));
+          setUploadWarnings((previous) => ({
+            ...previous,
+            [id]: {
+              warnings: result.warnings!, // We already checked it's defined above
+              filekey: result.filekey,
+              file,
+              title,
+              description,
+            },
+          }));
+        } else {
+          setUploadProgress((previous) => ({ ...previous, [id]: 'error' }));
+          setUploadErrors((previous) => ({ ...previous, [id]: result.error || 'Upload failed' }));
+        }
       } catch (error) {
         setUploadProgress((previous) => ({ ...previous, [id]: 'error' }));
         setUploadErrors((previous) => ({ ...previous, [id]: error instanceof Error ? error.message : 'Upload failed' }));
@@ -195,8 +214,48 @@ export function ReviewTab() {
     setIsUploading(false);
   };
 
+  const handleForceUpload = async (id: string) => {
+    const warningData = uploadWarnings[id];
+    if (!warningData) return;
+
+    setUploadProgress((previous) => ({ ...previous, [id]: 'uploading' }));
+
+    try {
+      const result = await uploadFile(
+        warningData.file,
+        warningData.title,
+        warningData.description,
+        { ignorewarnings: true, filekey: warningData.filekey }
+      );
+
+      if (result.success) {
+        setUploadProgress((previous) => ({ ...previous, [id]: 'success' }));
+        setUploadWarnings((previous) => {
+          const { [id]: _, ...rest } = previous;
+          return rest;
+        });
+      } else {
+        setUploadProgress((previous) => ({ ...previous, [id]: 'error' }));
+        setUploadErrors((previous) => ({ ...previous, [id]: result.error || 'Upload failed' }));
+      }
+    } catch (error) {
+      setUploadProgress((previous) => ({ ...previous, [id]: 'error' }));
+      setUploadErrors((previous) => ({ ...previous, [id]: error instanceof Error ? error.message : 'Upload failed' }));
+    }
+  };
+
+  const handleSkipWarning = (id: string) => {
+    setUploadProgress((previous) => ({ ...previous, [id]: 'error' }));
+    setUploadErrors((previous) => ({ ...previous, [id]: 'Skipped due to warnings' }));
+    setUploadWarnings((previous) => {
+      const { [id]: _, ...rest } = previous;
+      return rest;
+    });
+  };
+
   const successCount = Object.values(uploadProgress).filter((s) => s === 'success').length;
   const errorCount = Object.values(uploadProgress).filter((s) => s === 'error').length;
+  const warningCount = Object.values(uploadProgress).filter((s) => s === 'warning').length;
   const uploadComplete = Object.keys(uploadProgress).length > 0 &&
     Object.values(uploadProgress).every((s) => s === 'success' || s === 'error');
 
@@ -260,16 +319,23 @@ export function ReviewTab() {
           <div className="mb-2 flex items-center justify-between">
             <span className="font-medium text-white">Upload Progress</span>
             <span className="text-sm text-gray-400">
-              {successCount} succeeded, {errorCount} failed
+              {successCount} succeeded, {errorCount} failed{warningCount > 0 ? `, ${warningCount} need attention` : ''}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-zinc-700">
             <div
-              className={`h-full transition-all duration-300 ${errorCount > 0 ? 'bg-yellow-500' : 'bg-green-500'
+              className={`h-full transition-all duration-300 ${errorCount > 0 ? 'bg-yellow-500' : warningCount > 0 ? 'bg-orange-500' : 'bg-green-500'
                 }`}
               style={{ width: `${((successCount + errorCount) / Object.keys(uploadProgress).length) * 100}%` }}
             />
           </div>
+          {warningCount > 0 && (
+            <div className="mt-4 rounded-lg border border-orange-600/50 bg-orange-900/20 p-3">
+              <p className="mb-2 text-sm text-orange-400">
+                ⚠️ {warningCount} file(s) have warnings. Please review and decide whether to force upload or skip them.
+              </p>
+            </div>
+          )}
           {uploadComplete && successCount === Object.keys(uploadProgress).length && (
             <div className="mt-4 text-center">
               <p className="mb-3 font-medium text-green-400">All uploads completed successfully! 🎉</p>
@@ -303,12 +369,44 @@ export function ReviewTab() {
               <div className={`absolute right-16 top-2 rounded px-2 py-1 text-xs font-medium ${uploadProgress[id] === 'pending' ? 'bg-zinc-600 text-gray-300' :
                 uploadProgress[id] === 'uploading' ? 'bg-blue-600 text-white' :
                   uploadProgress[id] === 'success' ? 'bg-green-600 text-white' :
-                    'bg-red-600 text-white'
+                    uploadProgress[id] === 'warning' ? 'bg-orange-600 text-white' :
+                      'bg-red-600 text-white'
                 }`}>
                 {uploadProgress[id] === 'pending' && 'Waiting...'}
                 {uploadProgress[id] === 'uploading' && 'Uploading...'}
                 {uploadProgress[id] === 'success' && '✓ Uploaded'}
+                {uploadProgress[id] === 'warning' && '⚠️ Has warnings'}
                 {uploadProgress[id] === 'error' && `✗ ${uploadErrors[id] || 'Failed'}`}
+              </div>
+            )}
+            {/* Warning details and actions */}
+            {uploadProgress[id] === 'warning' && uploadWarnings[id] && (
+              <div className="mt-2 rounded-lg border border-orange-600/50 bg-orange-900/20 p-3">
+                <p className="mb-2 text-sm font-medium text-orange-400">Warnings:</p>
+                <ul className="mb-3 space-y-1 text-sm text-orange-300">
+                  {uploadWarnings[id].warnings.map((warning, index) => (
+                    <li key={index}>
+                      • {warning.message}
+                      {warning.duplicateFiles && (
+                        <span className="text-orange-400"> ({warning.duplicateFiles.join(', ')})</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleForceUpload(id)}
+                    className="rounded bg-orange-600 px-3 py-1 text-sm text-white transition-colors hover:bg-orange-700"
+                  >
+                    Upload Anyway
+                  </button>
+                  <button
+                    onClick={() => handleSkipWarning(id)}
+                    className="rounded bg-zinc-600 px-3 py-1 text-sm text-white transition-colors hover:bg-zinc-700"
+                  >
+                    Skip
+                  </button>
+                </div>
               </div>
             )}
           </div>

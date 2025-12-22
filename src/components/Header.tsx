@@ -1,7 +1,7 @@
-import { useWikimediaAuth } from '../hooks/useWikimediaAuth';
+import { useWikimediaCommons } from '../hooks/useWikimediaCommons';
 
 export function Header() {
-  const { login, logout, isAuthenticated, userName } = useWikimediaAuth();
+  const { login, logout, isAuthenticated, userName } = useWikimediaCommons();
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center border-b border-zinc-800 bg-black px-6">

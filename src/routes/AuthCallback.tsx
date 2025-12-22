@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useWikimediaAuth } from '../hooks/useWikimediaAuth';
+import { useWikimediaCommons } from '../hooks/useWikimediaCommons';
 
 export function AuthCallback() {
-  const { handleCallback } = useWikimediaAuth();
+  const { handleCallback } = useWikimediaCommons();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const hasRun = useRef(false);
