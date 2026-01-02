@@ -4,6 +4,9 @@ import { useAuthStore } from "../store/authStore";
 
 const CLIENT_ID = import.meta.env.VITE_WIKIMEDIA_CLIENT_ID! as string;
 
+// Optional: Direct access token from environment variable (skips OAuth flow)
+const ENV_ACCESS_TOKEN = import.meta.env.VITE_ACCESS_TOKEN as string | undefined;
+
 // OAuth 2.0 scopes should be space-separated
 // See: https://www.mediawiki.org/wiki/OAuth/For_Admins for grant names
 // 'basic' - baseline user info
@@ -101,9 +104,15 @@ export function useWikimediaCommons() {
 
   // ==================== Authentication ====================
 
-
-
   async function getValidAccessToken() {
+    // If environment token is available, use it directly (skips OAuth)
+    if (ENV_ACCESS_TOKEN) {
+      console.log(
+        "[getValidAccessToken] Using access token from environment variable"
+      );
+      return ENV_ACCESS_TOKEN;
+    }
+
     const current = Math.floor(Date.now() / 1000);
     if (accessToken && expiresAt && current < expiresAt - 60) {
       console.log(
@@ -316,7 +325,7 @@ export function useWikimediaCommons() {
       console.error("[handleCallback] Token exchange failed", {
         error: errorMessage,
       });
-      throw new Error(`Token endpoint error: ${errorMessage}`);
+      throw new Error(`Token endpoint error: ${JSON.stringify(errorMessage)}`);
     }
   }
 
@@ -461,6 +470,7 @@ export function useWikimediaCommons() {
       crossorigin: "",
     }).toString();
 
+
     const form = new FormData();
     form.append("filename", filename);
     form.append("text", text); // Page content
@@ -570,9 +580,10 @@ export function useWikimediaCommons() {
 
   return {
     // Auth state
-    accessToken,
+    accessToken: ENV_ACCESS_TOKEN ?? accessToken,
     userName,
-    isAuthenticated: !!accessToken,
+    isAuthenticated: !!(ENV_ACCESS_TOKEN ?? accessToken),
+    isUsingEnvToken: !!ENV_ACCESS_TOKEN,
     // Auth actions
     login,
     handleCallback,
@@ -650,6 +661,12 @@ function parseWarnings(warnings: Record<string, unknown>): UploadWarning[] {
 }
 
 async function login() {
+  // Skip OAuth flow if using environment token
+  if (ENV_ACCESS_TOKEN) {
+    console.log("[login] Using environment token, skipping OAuth flow");
+    return;
+  }
+
   const state = generateCodeVerifier(32);
   const verifier = generateCodeVerifier();
   const challenge = await generateCodeChallenge(verifier);
