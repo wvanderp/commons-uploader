@@ -1,20 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useImageSetStore, type Image } from '../../store/imageSetStore';
+import { applyTemplate } from '../../utils/templateUtils';
 
 import { useWikimediaCommons, type UploadWarning } from '../../hooks/useWikimediaCommons';
-
-function applyTemplate(template: string, keys: Record<string, string>, globalVariables: Record<string, string>): string {
-  let result = template;
-  const regex = /\{\{\{(.*?)\}\}\}/g;
-  result = result.replaceAll(regex, (_, key) => {
-    const trimmedKey = key.trim();
-    // If the key doesn't exist or is an empty string, show a visible placeholder
-    const value = keys[trimmedKey] || globalVariables[trimmedKey];
-    return value !== undefined && value !== '' ? value : '<<<missing>>>';
-  });
-  return result;
-}
 
 type UploadStatus = 'pending' | 'uploading' | 'success' | 'error' | 'warning';
 
@@ -170,8 +159,9 @@ export function ReviewTab() {
   const processedImages = useMemo(() => {
     return imageIds.map((id) => {
       const image = images[id];
-      const title = applyTemplate(titleTemplate, image.keys, globalVariables);
-      const description = applyTemplate(template, image.keys, globalVariables);
+      const exifData = image.exifData ?? {};
+      const title = applyTemplate(titleTemplate, image.keys, globalVariables, exifData);
+      const description = applyTemplate(template, image.keys, globalVariables, exifData);
       return { id, image, title, description };
     });
   }, [imageIds, images, titleTemplate, template, globalVariables]);

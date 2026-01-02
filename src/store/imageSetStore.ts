@@ -17,6 +17,10 @@ export interface Image {
      * Whether the image has been reviewed and marked as ready for upload
     */
     reviewed: boolean;
+    /*
+     * Extracted EXIF data from the image, keyed by EXIF field name
+    */
+    exifData?: Record<string, unknown>;
 }
 
 interface ImageSet {
