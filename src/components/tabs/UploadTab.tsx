@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useImageSetStore } from '../../store/imageSetStore';
+import { extractExifData } from '../../utils/exifUtils';
 
 function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
   event.preventDefault();
@@ -14,10 +15,13 @@ export function UploadTab() {
 
   const imageIds = Object.keys(images);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = event.target.files;
     if (files) {
       for (const file of files) {
+        // Extract EXIF data first (before FileReader consumes the file)
+        const exifData = await extractExifData(file);
+
         const reader = new FileReader();
         reader.addEventListener('load', (e) => {
           const result = e.target?.result as string;
@@ -30,6 +34,7 @@ export function UploadTab() {
               name: file.name,
               mimeType,
               keys: {},
+              exifData,
             });
           }
         });
@@ -40,14 +45,17 @@ export function UploadTab() {
         fileInputReference.current.value = '';
       }
     }
-  };
+  }
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  async function handleDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     const files = event.dataTransfer.files;
     if (files) {
       for (const file of files) {
         if (file.type.startsWith('image/')) {
+          // Extract EXIF data first (before FileReader consumes the file)
+          const exifData = await extractExifData(file);
+
           const reader = new FileReader();
           reader.addEventListener('load', (e) => {
             const result = e.target?.result as string;
@@ -60,6 +68,7 @@ export function UploadTab() {
                 name: file.name,
                 mimeType,
                 keys: {},
+                exifData,
               });
             }
           });
@@ -67,7 +76,7 @@ export function UploadTab() {
         }
       }
     }
-  };
+  }
 
   return (
     <div className="space-y-6">

@@ -144,18 +144,20 @@ const USEFUL_EXIF_FIELDS = [
   'ISO',
   'ImageWidth',
   'ImageHeight',
+  'ExifImageWidth',
+  'ExifImageHeight',
 ];
 
 function ExifDisplay({ exifData, onInsertExifReference, activeFieldKey }: ExifDisplayProps) {
   const exifEntries = useMemo(() => {
     const entries: Array<{ key: string; value: string }> = [];
-    
+
     for (const field of USEFUL_EXIF_FIELDS) {
       if (field in exifData && exifData[field] !== undefined) {
         entries.push({ key: field, value: String(exifData[field]) });
       }
     }
-    
+
     return entries;
   }, [exifData]);
 
@@ -174,9 +176,8 @@ function ExifDisplay({ exifData, onInsertExifReference, activeFieldKey }: ExifDi
           key={key}
           onClick={() => onInsertExifReference(key)}
           disabled={!activeFieldKey}
-          className={`flex flex-col rounded bg-zinc-800 p-2 text-left transition-colors ${
-            activeFieldKey ? 'cursor-pointer hover:bg-zinc-700' : 'cursor-default opacity-60'
-          }`}
+          className={`flex flex-col rounded bg-zinc-800 p-2 text-left transition-colors ${activeFieldKey ? 'cursor-pointer hover:bg-zinc-700' : 'cursor-default opacity-60'
+            }`}
           title={activeFieldKey ? `Click to insert {{{exif.${key}}}} into ${activeFieldKey}` : 'Select a field above first'}
         >
           <span className="text-xs text-gray-500">{key}</span>
@@ -214,9 +215,8 @@ function GlobalVariablesDisplay({ globalVariables, keys, onInsertGlobalReference
           key={key}
           onClick={() => onInsertGlobalReference(key)}
           disabled={!activeFieldKey}
-          className={`flex flex-col rounded bg-zinc-800 p-2 text-left transition-colors ${
-            activeFieldKey ? 'cursor-pointer hover:bg-zinc-700' : 'cursor-default opacity-60'
-          }`}
+          className={`flex flex-col rounded bg-zinc-800 p-2 text-left transition-colors ${activeFieldKey ? 'cursor-pointer hover:bg-zinc-700' : 'cursor-default opacity-60'
+            }`}
           title={activeFieldKey ? `Click to insert {{{global.${key}}}} into ${activeFieldKey}` : 'Select a field above first'}
         >
           <span className="text-xs text-gray-500">{key}</span>
@@ -344,11 +344,10 @@ export function FillOutTab() {
               <button
                 onClick={handleNavigatePrevious}
                 disabled={safeCurrentIndex === 0}
-                className={`rounded px-3 py-1.5 text-sm transition-colors ${
-                  safeCurrentIndex === 0
+                className={`rounded px-3 py-1.5 text-sm transition-colors ${safeCurrentIndex === 0
                     ? 'cursor-not-allowed text-gray-600'
                     : 'bg-zinc-700 text-gray-300 hover:bg-zinc-600'
-                }`}
+                  }`}
               >
                 ← Prev
               </button>
@@ -399,9 +398,8 @@ export function FillOutTab() {
               {currentImage.name}
             </h3>
             <div className="flex items-center gap-2">
-              <span className={`rounded px-2 py-1 text-sm ${
-                progressPercent === 100 ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700 text-gray-400'
-              }`}>
+              <span className={`rounded px-2 py-1 text-sm ${progressPercent === 100 ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700 text-gray-400'
+                }`}>
                 {filledFields}/{totalFields}
               </span>
               {safeCurrentIndex > 0 && (
