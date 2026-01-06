@@ -4,6 +4,23 @@ const DB_NAME = 'ImageSetDB';
 const STORE_NAME = 'ImageSetStore';
 const DB_VERSION = 1;
 
+/**
+ * Clears all data from the IndexedDB database by deleting the entire database.
+ * This is useful for resetting the application state.
+ */
+export function clearDatabase(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.deleteDatabase(DB_NAME);
+        request.addEventListener('success', () => resolve());
+        request.addEventListener('error', () => reject(request.error));
+        request.addEventListener('blocked', () => {
+            // Database is blocked, likely because there are open connections
+            console.warn('Database deletion blocked. Close other tabs and try again.');
+            reject(new Error('Database deletion blocked'));
+        });
+    });
+}
+
 function getDB(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
